@@ -1,0 +1,5 @@
+package ir.cairo.client;
+
+public class Keys {
+    public static final String PUB = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv2Ch6C0Rq258CX1yGzynF3/h0B3Q0+eElsecL9PUq+tntIfCqGuCPC99ZAKR65mzTQ6OGISCWN8FbPhpdFVtU6XINp/YZPTZ7BlfxEIINtcnKkJlaGxmrQ5KPEaAxo6AZ0dDPCCGk4tWonZ4+iRwRPScMw3fpj3clYz33NIeRMAhFmbbzMUptd/LGmtrhDdujcJCPIycdC5wvm8l/thNmPxeeQs114w9lITCBjVWDKHn202ZNaO+fDJhTwNFcjE8q6Tvsv2AzDXIq7HLwH+dz9UfJwj+NUMTT4Sklm0Z1xFv2BK/ePKFVZw5VjNKEDCfBfVw2bIu7KgmiJaLdw/QzQIDAQAB";
+}
