@@ -43,7 +43,7 @@ public class ActivateScreen extends GuiScreen {
 
     @Override
     public void drawScreen(int mx, int my, float pt) {
-        drawRect(0, 0, width, height, 0xCC000000);
+        Ui.background(this, mx, my, 0xCC000000);
         int cx = width / 2, cy = height / 2;
         drawRect(cx - 145, cy - 56, cx + 145, cy + 76, 0xEE2B2B2B);
         drawRect(cx - 145, cy - 56, cx + 145, cy - 53, 0xFFE53935);

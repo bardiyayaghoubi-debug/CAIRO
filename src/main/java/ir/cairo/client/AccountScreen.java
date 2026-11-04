@@ -51,7 +51,7 @@ public class AccountScreen extends GuiScreen {
 
     @Override
     public void drawScreen(int mx, int my, float pt) {
-        drawRect(0, 0, width, height, 0xCC000000);
+        Ui.background(this, mx, my, 0xCC000000);
         int cx = width / 2, cy = height / 2;
         drawRect(cx - 110, cy - 50, cx + 110, cy + 70, 0xEE2B2B2B);
         drawRect(cx - 110, cy - 50, cx + 110, cy - 47, 0xFFE53935);

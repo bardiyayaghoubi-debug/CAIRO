@@ -39,7 +39,7 @@ public class CosmeticsScreen extends GuiScreen {
 
     @Override
     public void drawScreen(int mx, int my, float pt) {
-        drawRect(0, 0, width, height, 0x99000000);
+        Ui.background(this, mx, my, 0xAA000000);
         int px = px(), py = py(), rh = rowH();
         drawRect(px, py, px + pw, py + ph(), 0xEE2B2B2B);
         drawRect(px, py, px + pw, py + 3, 0xFFE53935);
