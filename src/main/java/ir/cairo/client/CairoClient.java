@@ -13,6 +13,7 @@ import org.lwjgl.input.Keyboard;
 public class CairoClient {
     public static KeyBinding menuKey = new KeyBinding("Open Cairo Menu", Keyboard.KEY_RSHIFT, "Cairo Client");
     public static KeyBinding zoomKey = new KeyBinding("Zoom", Keyboard.KEY_C, "Cairo Client");
+    public static KeyBinding danceKey = new KeyBinding("Dance", Keyboard.KEY_G, "Cairo Client");
 
     @Mod.EventHandler
     public void pre(FMLPreInitializationEvent e) {
@@ -23,6 +24,8 @@ public class CairoClient {
     public void init(FMLInitializationEvent e) {
         ClientRegistry.registerKeyBinding(menuKey);
         ClientRegistry.registerKeyBinding(zoomKey);
+        ClientRegistry.registerKeyBinding(danceKey);
+        MinecraftForge.EVENT_BUS.register(new Dance());
         Events h = new Events();
         MinecraftForge.EVENT_BUS.register(h);
         FMLCommonHandler.instance().bus().register(h);

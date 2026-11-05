@@ -73,6 +73,7 @@ public class Events {
 
         EntityPlayerSP p = mc.thePlayer;
         if (p == null) return;
+        Dance.tick(mc);
 
         // ender pearl: a new pearl spawning right next to us = we threw it
         if (mc.theWorld != null) {
@@ -112,6 +113,7 @@ public class Events {
     @SubscribeEvent
     public void key(InputEvent.KeyInputEvent e) {
         if (CairoClient.menuKey.isPressed() && mc.currentScreen == null) mc.displayGuiScreen(new ClientMenu(null));
+        if (CairoClient.danceKey.isPressed() && Config.get("dance") && mc.currentScreen == null) Dance.toggle();
     }
 
     @SubscribeEvent

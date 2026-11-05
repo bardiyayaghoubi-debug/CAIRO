@@ -10,6 +10,7 @@ public class Config {
         {"fullbright", "روشنایی کامل", "0"}, {"mainmenu", "منوی اصلی کایرو", "0"},
         {"cps", "نمایش CPS", "1"}, {"combo", "کمبو", "1"}, {"reach", "نمایش Reach", "1"}, {"keys", "کیستروکس", "1"},
         {"armor", "نمایش زره", "1"}, {"potions", "افکت‌های پوشن", "1"}, {"sprint", "اسپرینت خودکار", "1"}, {"zoom", "زوم (کلید C)", "1"},
+        {"dance", "رقص (کلید G)", "1"},
         {"resources", "منابع بدوارز", "2"}, {"blocks", "تعداد بلوک", "2"}, {"finals", "فاینال کیل", "2"},
         {"fps", "نمایش FPS", "3"}, {"ping", "نمایش پینگ", "3"}, {"coords", "مختصات", "3"}, {"clock", "ساعت", "3"},
         {"direction", "جهت", "3"}, {"memory", "مصرف رم", "3"},
@@ -20,10 +21,15 @@ public class Config {
 
     static Map<String, Boolean> map = new HashMap<String, Boolean>();
     static Map<String, float[]> pos = new HashMap<String, float[]>();
+    static Map<String, Float> scales = new HashMap<String, Float>();
     public static String username = "", cape = "", wing = "", pet = "", skin = "";
     public static boolean slim = false;
     public static int blurLevel = 1;
     public static int chStyle = 0, chSize = 5, chGap = 3, chColor = 0, blockColor = 1, pearlCd = 15;
+    public static float wingScale = 1.0f;
+    public static int wingSpeed = 100;
+    public static int hudAccent = 1, hudText = 0, hudBgAlpha = 70;
+    public static boolean hudBg = true, hudShadow = true;
     public static List<String> licenses = new ArrayList<String>();
     static File file;
 
@@ -56,6 +62,10 @@ public class Config {
                             pos.put(k, new float[]{Float.parseFloat(a[0]), Float.parseFloat(a[1])});
                         } catch (Exception ignored) {}
                     }
+                    String sc = p.getProperty("scale." + k);
+                    if (sc != null) {
+                        try { scales.put(k, Float.parseFloat(sc)); } catch (Exception ignored) {}
+                    }
                 }
                 username = p.getProperty("username", "");
                 cape = p.getProperty("cape", "");
@@ -63,13 +73,20 @@ public class Config {
                 pet = p.getProperty("pet", "");
                 skin = p.getProperty("skin", "");
                 slim = Boolean.parseBoolean(p.getProperty("slim", "false"));
-                try { blurLevel = Math.max(0, Math.min(2, Integer.parseInt(p.getProperty("blurlevel", "1")))); } catch (NumberFormatException ignored) {}
+                blurLevel = ci(p, "blurlevel", 1, 0, 2);
                 chStyle = ci(p, "chstyle", 0, 0, 2);
                 chSize = ci(p, "chsize", 5, 1, 14);
                 chGap = ci(p, "chgap", 3, 0, 10);
                 chColor = ci(p, "chcolor", 0, 0, 6);
                 blockColor = ci(p, "blockcolor", 1, 0, 6);
                 pearlCd = ci(p, "pearlcd", 15, 1, 60);
+                wingScale = ci(p, "wingscale", 100, 50, 200) / 100f;
+                wingSpeed = ci(p, "wingspeed", 100, 50, 200);
+                hudAccent = ci(p, "hudaccent", 1, 0, 6);
+                hudText = ci(p, "hudtext", 0, 0, 6);
+                hudBgAlpha = ci(p, "hudbgalpha", 70, 0, 100);
+                hudBg = Boolean.parseBoolean(p.getProperty("hudbg", "true"));
+                hudShadow = Boolean.parseBoolean(p.getProperty("hudshadow", "true"));
                 licenses.clear();
                 for (String s : p.getProperty("licenses", "").split(";")) if (!s.trim().isEmpty()) licenses.add(s.trim());
             } catch (IOException ignored) {}
@@ -90,7 +107,16 @@ public class Config {
 
     public static void setPos(String id, float fx, float fy) { pos.put(id, new float[]{fx, fy}); }
 
-    public static void clearPos() { pos.clear(); save(); }
+    public static void clearPos() { pos.clear(); scales.clear(); save(); }
+
+    public static float getScale(String id) {
+        Float f = scales.get(id);
+        return f == null ? 1f : f;
+    }
+
+    public static void setScale(String id, float s) {
+        scales.put(id, Math.max(0.5f, Math.min(2.5f, Math.round(s * 10f) / 10f)));
+    }
 
     public static void save() {
         if (file == null) return;
@@ -100,6 +126,8 @@ public class Config {
                 p.setProperty(m[0], String.valueOf(get(m[0])));
                 float[] f = pos.get(m[0]);
                 if (f != null) p.setProperty("pos." + m[0], f[0] + "," + f[1]);
+                Float sc = scales.get(m[0]);
+                if (sc != null) p.setProperty("scale." + m[0], String.valueOf(sc));
             }
             p.setProperty("username", username);
             p.setProperty("cape", cape);
@@ -114,6 +142,13 @@ public class Config {
             p.setProperty("chcolor", String.valueOf(chColor));
             p.setProperty("blockcolor", String.valueOf(blockColor));
             p.setProperty("pearlcd", String.valueOf(pearlCd));
+            p.setProperty("wingscale", String.valueOf(Math.round(wingScale * 100f)));
+            p.setProperty("wingspeed", String.valueOf(wingSpeed));
+            p.setProperty("hudaccent", String.valueOf(hudAccent));
+            p.setProperty("hudtext", String.valueOf(hudText));
+            p.setProperty("hudbgalpha", String.valueOf(hudBgAlpha));
+            p.setProperty("hudbg", String.valueOf(hudBg));
+            p.setProperty("hudshadow", String.valueOf(hudShadow));
             StringBuilder sb = new StringBuilder();
             for (String s : licenses) { if (sb.length() > 0) sb.append(';'); sb.append(s); }
             p.setProperty("licenses", sb.toString());

@@ -13,6 +13,16 @@ public class Fa {
         fr.setBidiFlag(b);
     }
 
+    public static void draw(FontRenderer fr, String s, int x, int y, int color, boolean shadow) {
+        boolean u = fr.getUnicodeFlag();
+        boolean b = fr.getBidiFlag();
+        fr.setUnicodeFlag(true);
+        fr.setBidiFlag(true);
+        fr.drawString(s, x, y, color, shadow);
+        fr.setUnicodeFlag(u);
+        fr.setBidiFlag(b);
+    }
+
     public static int width(FontRenderer fr, String s) {
         boolean u = fr.getUnicodeFlag();
         fr.setUnicodeFlag(true);

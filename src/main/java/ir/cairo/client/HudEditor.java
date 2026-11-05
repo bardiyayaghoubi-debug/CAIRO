@@ -5,10 +5,11 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 public class HudEditor extends GuiScreen {
     final GuiScreen parent;
-    String drag = null;
+    String drag = null, hover = null;
     int offX, offY;
 
     public HudEditor(GuiScreen p) { parent = p; }
@@ -20,22 +21,48 @@ public class HudEditor extends GuiScreen {
         drawRect(x + w - 1, y, x + w, y + h, c);
     }
 
+    String hit(int mx, int my) {
+        ScaledResolution sr = new ScaledResolution(mc);
+        for (int i = Hud.ORDER.length - 1; i >= 0; i--) {
+            String id = Hud.ORDER[i];
+            if (!Config.get(id)) continue;
+            int[] r = Hud.position(id, sr, fontRendererObj, true);
+            if (r[2] > 0 && Ui.inside(mx, my, r[0], r[1], r[2], r[3])) return id;
+        }
+        return null;
+    }
+
     @Override
     public void drawScreen(int mx, int my, float pt) {
         drawRect(0, 0, width, height, 0x55000000);
         FontRenderer fr = fontRendererObj;
         ScaledResolution sr = new ScaledResolution(mc);
+        hover = drag != null ? drag : hit(mx, my);
         for (String id : Hud.ORDER) {
             if (!Config.get(id)) continue;
             int[] r = Hud.position(id, sr, fr, true);
             if (r[2] <= 0) continue;
             Hud.draw(id, r[0], r[1], fr, true);
-            boolean hov = id.equals(drag) || (drag == null && Ui.inside(mx, my, r[0], r[1], r[2], r[3]));
+            boolean hov = id.equals(hover);
             outline(r[0] - 1, r[1] - 1, r[2] + 2, r[3] + 2, hov ? 0xFFFF5252 : 0x88E53935);
+            if (hov) fr.drawStringWithShadow("x" + String.format(java.util.Locale.US, "%.1f", Config.getScale(id)), r[0], r[1] - 10, 0xFFFFFFFF);
         }
-        Fa.drawCenter(fr, "ماژول‌ها را با موس بکش  •  ESC = ذخیره و بازگشت", width / 2, height - 36, 0xFFEEEEEE);
+        Fa.drawCenter(fr, "بکش = جابه‌جایی  •  چرخ موس یا + و - = اندازه  •  ESC = ذخیره و بازگشت", width / 2, height - 36, 0xFFEEEEEE);
         int bx = width / 2 - 60, by = height - 22;
-        Ui.button(bx, by, 120, 16, "ریست جایگاه‌ها", Ui.inside(mx, my, bx, by, 120, 16), false);
+        Ui.button(bx, by, 120, 16, "ریست جایگاه و اندازه", Ui.inside(mx, my, bx, by, 120, 16), false);
+    }
+
+    void changeScale(String id, float delta) {
+        if (id == null) return;
+        Config.setScale(id, Config.getScale(id) + delta);
+        Config.save();
+    }
+
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        int d = Mouse.getEventDWheel();
+        if (d != 0 && hover != null) changeScale(hover, d > 0 ? 0.1f : -0.1f);
     }
 
     @Override
@@ -44,17 +71,13 @@ public class HudEditor extends GuiScreen {
         if (b != 0) return;
         int bx = width / 2 - 60, by = height - 22;
         if (Ui.inside(mx, my, bx, by, 120, 16)) { Config.clearPos(); return; }
-        ScaledResolution sr = new ScaledResolution(mc);
-        for (int i = Hud.ORDER.length - 1; i >= 0; i--) {
-            String id = Hud.ORDER[i];
-            if (!Config.get(id)) continue;
+        String id = hit(mx, my);
+        if (id != null) {
+            ScaledResolution sr = new ScaledResolution(mc);
             int[] r = Hud.position(id, sr, fontRendererObj, true);
-            if (r[2] > 0 && Ui.inside(mx, my, r[0], r[1], r[2], r[3])) {
-                drag = id;
-                offX = mx - r[0];
-                offY = my - r[1];
-                return;
-            }
+            drag = id;
+            offX = mx - r[0];
+            offY = my - r[1];
         }
     }
 
@@ -82,6 +105,8 @@ public class HudEditor extends GuiScreen {
     @Override
     protected void keyTyped(char c, int k) throws IOException {
         if (k == Keyboard.KEY_ESCAPE) { Config.save(); mc.displayGuiScreen(parent); return; }
+        if (k == Keyboard.KEY_ADD || k == Keyboard.KEY_EQUALS) changeScale(hover, 0.1f);
+        else if (k == Keyboard.KEY_SUBTRACT || k == Keyboard.KEY_MINUS) changeScale(hover, -0.1f);
         super.keyTyped(c, k);
     }
 

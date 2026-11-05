@@ -22,7 +22,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.MathHelper;
 
 public class Hud {
-    public static final int RED = 0xFFE53935, BG = 0xB0262626, TXT = 0xFFEEEEEE;
     /** every movable HUD element, in default order */
     public static final String[] ORDER = {"fps", "ping", "cps", "coords", "combo", "reach", "finals", "resources", "blocks", "clock", "direction", "memory", "pearl", "stats", "session", "keys", "armor", "potions"};
     public static int combo = 0, finals = 0;
@@ -33,6 +32,19 @@ public class Hud {
     public static final LinkedList<Long> right = new LinkedList<Long>();
 
     static Minecraft mc() { return Minecraft.getMinecraft(); }
+
+    // ----- style (editable from the client panel) -----
+    static int accent() { return Ui.color(Config.hudAccent); }
+    static int txt() { return Ui.color(Config.hudText); }
+    static int bg() { return Config.hudBg ? (((int) (Config.hudBgAlpha * 2.55f) << 24) | 0x262626) : 0; }
+
+    /** one-line panel in the current style */
+    public static void panel(FontRenderer fr, String t, int x, int y) {
+        int w = Fa.width(fr, t) + 8;
+        if (Config.hudBg) Gui.drawRect(x, y, x + w, y + 12, bg());
+        Gui.drawRect(x, y, x + 2, y + 12, accent());
+        Fa.draw(fr, t, x + 5, y + 2, txt(), Config.hudShadow);
+    }
 
     static boolean isText(String id) { return !(id.equals("keys") || id.equals("armor") || id.equals("potions")); }
 
@@ -110,7 +122,7 @@ public class Hud {
         return p == null ? 0 : p.getActivePotionEffects().size();
     }
 
-    public static int[] size(String id, FontRenderer fr, boolean preview) {
+    static int[] baseSize(String id, FontRenderer fr, boolean preview) {
         if (id.equals("keys")) return new int[]{68, 62};
         if (id.equals("armor")) return new int[]{56, 72};
         if (id.equals("potions")) {
@@ -121,6 +133,13 @@ public class Hud {
         String t = text(id);
         if (t == null) return new int[]{0, 0};
         return new int[]{Fa.width(fr, t) + 8, 12};
+    }
+
+    /** size after the module's own scale */
+    public static int[] size(String id, FontRenderer fr, boolean preview) {
+        int[] b = baseSize(id, fr, preview);
+        float s = Config.getScale(id);
+        return new int[]{(int) Math.ceil(b[0] * s), (int) Math.ceil(b[1] * s)};
     }
 
     /** returns {x, y, w, h} in scaled coordinates */
@@ -152,11 +171,22 @@ public class Hud {
     }
 
     static void keyBox(FontRenderer fr, String l, int x, int y, int w, int h, boolean down) {
-        Gui.drawRect(x, y, x + w, y + h, down ? 0xE0E53935 : BG);
-        fr.drawStringWithShadow(l, x + (w - fr.getStringWidth(l)) / 2f, y + (h - 8) / 2f, TXT);
+        int on = (0xE0 << 24) | (accent() & 0xFFFFFF);
+        Gui.drawRect(x, y, x + w, y + h, down ? on : bg());
+        fr.drawString(l, x + (w - fr.getStringWidth(l)) / 2f, y + (h - 8) / 2f, txt(), Config.hudShadow);
     }
 
     public static void draw(String id, int x, int y, FontRenderer fr, boolean preview) {
+        float s = Config.getScale(id);
+        if (s == 1f) { drawBase(id, x, y, fr, preview); return; }
+        GlStateManager.pushMatrix();
+        GlStateManager.translate((float) x, (float) y, 0f);
+        GlStateManager.scale(s, s, 1f);
+        drawBase(id, 0, 0, fr, preview);
+        GlStateManager.popMatrix();
+    }
+
+    static void drawBase(String id, int x, int y, FontRenderer fr, boolean preview) {
         EntityPlayerSP p = mc().thePlayer;
         if (p == null) return;
         if (id.equals("keys")) {
@@ -183,7 +213,7 @@ public class Hud {
                 GlStateManager.disableDepth();
                 if (st.getMaxDamage() > 0) {
                     String d = String.valueOf(st.getMaxDamage() - st.getItemDamage());
-                    fr.drawStringWithShadow(d, x + 34 - fr.getStringWidth(d), yy + 4, TXT);
+                    fr.drawString(d, x + 34 - fr.getStringWidth(d), yy + 4, txt(), Config.hudShadow);
                 }
             }
             GlStateManager.enableDepth();
@@ -196,24 +226,21 @@ public class Hud {
                 PotionEffect pe = (PotionEffect) o;
                 String name = I18n.format(pe.getEffectName());
                 if (pe.getAmplifier() > 0) name += " " + (pe.getAmplifier() + 1);
-                Gui.drawRect(x, yy, x + 104, yy + 14, BG);
-                Gui.drawRect(x, yy, x + 2, yy + 14, RED);
-                fr.drawStringWithShadow(name + " " + Potion.getDurationString(pe), x + 5, yy + 3, TXT);
+                if (Config.hudBg) Gui.drawRect(x, yy, x + 104, yy + 14, bg());
+                Gui.drawRect(x, yy, x + 2, yy + 14, accent());
+                fr.drawString(name + " " + Potion.getDurationString(pe), x + 5, yy + 3, txt(), Config.hudShadow);
                 yy += 16;
                 n++;
             }
             if (n == 0 && preview) {
-                Gui.drawRect(x, y, x + 104, y + 14, BG);
-                Gui.drawRect(x, y, x + 2, y + 14, RED);
-                fr.drawStringWithShadow("Speed II 1:20", x + 5, y + 3, TXT);
+                if (Config.hudBg) Gui.drawRect(x, y, x + 104, y + 14, bg());
+                Gui.drawRect(x, y, x + 2, y + 14, accent());
+                fr.drawString("Speed II 1:20", x + 5, y + 3, txt(), Config.hudShadow);
             }
             return;
         }
         String t = text(id);
         if (t == null) return;
-        int w = Fa.width(fr, t) + 8;
-        Gui.drawRect(x, y, x + w, y + 12, BG);
-        Gui.drawRect(x, y, x + 2, y + 12, RED);
-        Fa.draw(fr, t, x + 5, y + 2, TXT);
+        panel(fr, t, x, y);
     }
 }

@@ -39,9 +39,9 @@ public class ClientMenu extends GuiScreen {
         return new int[]{x, y, cardW(), CARD_H};
     }
 
-    String[] sideItems() { return new String[]{"ماژول‌ها", "ویرایش HUD", "کراس‌هیر و بلوک", "کازمتیک‌ها", "اسکین", "حساب آفلاین", "بستن"}; }
+    String[] sideItems() { return new String[]{"ماژول‌ها", "ویرایش HUD", "ظاهر HUD", "کراس‌هیر و بلوک", "کازمتیک‌ها", "اسکین", "حساب آفلاین", "بستن"}; }
 
-    int sideY(int i) { return py() + 42 + i * 22; }
+    int sideY(int i) { return py() + 42 + i * 21; }
 
     int chipX(int i, FontRenderer fr, String[] chips) {
         int x = cx() + cw();
@@ -119,11 +119,12 @@ public class ClientMenu extends GuiScreen {
                 if (i == 1) {
                     if (mc.thePlayer == null) msg = "ویرایش HUD فقط داخل بازی ممکن است";
                     else mc.displayGuiScreen(new HudEditor(this));
-                } else if (i == 2) mc.displayGuiScreen(new LookScreen(this));
-                else if (i == 3) mc.displayGuiScreen(new CosmeticsScreen(this));
-                else if (i == 4) mc.displayGuiScreen(new SkinScreen(this));
-                else if (i == 5) mc.displayGuiScreen(new AccountScreen(this));
-                else if (i == 6) mc.displayGuiScreen(parent);
+                } else if (i == 2) mc.displayGuiScreen(new StyleScreen(this));
+                else if (i == 3) mc.displayGuiScreen(new LookScreen(this));
+                else if (i == 4) mc.displayGuiScreen(new CosmeticsScreen(this));
+                else if (i == 5) mc.displayGuiScreen(new SkinScreen(this));
+                else if (i == 6) mc.displayGuiScreen(new AccountScreen(this));
+                else if (i == 7) mc.displayGuiScreen(parent);
                 return;
             }
             String[] chips = chips();
